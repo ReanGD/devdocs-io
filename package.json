@@ -2,7 +2,7 @@
 	"name": "devdocs-io",
 	"displayName": "devdocs-io",
 	"description": "Search docs on devdocs.io",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"publisher": "ReanGD",
 	"icon": "images/icon.png",
 	"license": "Apache 2.0",
@@ -27,14 +27,14 @@
         "documentation"
     ],
 	"activationEvents": [
-		"onCommand:devdocs-io.helloWorld"
+		"onCommand:devdocs-io.search"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
 		"commands": [
 			{
-				"command": "devdocs-io.helloWorld",
-				"title": "Hello World"
+				"command": "devdocs-io.search",
+				"title": "devdocs-io: Search"
 			}
 		]
 	},
