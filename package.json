@@ -48,11 +48,25 @@
 			"type": "object",
 			"title": "DevDocs-io",
 			"properties": {
-				"devdocs-io.URL": {
+				"devdocs-io.url": {
 					"type": "string",
+					"title": "URL",
 					"default": "https://devdocs.io/",
 					"format": "uri",
 					"markdownDescription": "URL of the devdocs site, if you are using a local instance, then specify its URL, for example `http://localhost:9292`"
+				},
+				"devdocs-io.column": {
+					"type": "string",
+					"title": "Column",
+					"enum": [
+						"Active",
+						"Beside",
+						"First",
+						"Second",
+						"Third"
+					],
+					"default": "Beside",
+					"markdownDescription": "The column in which the documentation opens"
 				}
 			}
 		}
