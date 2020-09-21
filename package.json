@@ -27,7 +27,8 @@
 		"documentation"
 	],
 	"activationEvents": [
-		"onCommand:devdocs-io.search"
+		"onCommand:devdocs-io.search",
+		"onCommand:devdocs-io.searchNewTab"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -35,6 +36,11 @@
 			{
 				"command": "devdocs-io.search",
 				"title": "Search",
+				"category": "devdocs-io"
+			},
+			{
+				"command": "devdocs-io.searchNewTab",
+				"title": "Search in a new tab",
 				"category": "devdocs-io"
 			}
 		],
