@@ -38,11 +38,22 @@ class Panel {
 	goto(url: string) {
 		this.id++;
 		const html = `
-		<style>iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; frameborder: 0; }</style>
-		<iframe id=${this.id} src=${url} />`;
+		<!DOCTYPE html>
+		<html lang="en">
+		<head>
+			<meta charset="UTF-8">
+			<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<title>Devdocs</title>
+			<style>iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; frameborder: 0; }</style>
+		</head>
+		<body>
+			<iframe id=${this.id} src=${url} />
+		</body>
+		</html>`;
 
 		if (!this.removed) {
 			this.panel.webview.html = html;
+			this.panel.reveal(this.panel.viewColumn);
 		}
 	}
 }
