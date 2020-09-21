@@ -11,13 +11,18 @@ export function activate(context: vscode.ExtensionContext) {
 				retainContextWhenHidden: true
 			}
 		);
-		panel.webview.html = getWebviewContent("http://localhost:9292/cpp/memory/shared_ptr");
+		const devdocsURL = vscode.workspace.getConfiguration("devdocs-io").get("URL", "https://devdocs.io/").toString();
+		panel.webview.html = getWebviewContent(devdocsURL);
 	});
 
 	context.subscriptions.push(searchCmd);
 }
 
 export function deactivate() {}
+
+function showMessage(test: string) {
+	vscode.window.showInformationMessage(test);
+}
 
 function getWebviewContent(url: string) {
 	const html = `

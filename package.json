@@ -8,12 +8,12 @@
 	"license": "Apache 2.0",
 	"homepage": "https://github.com/ReanGD/vscode-devdocs-io/blob/master/README.md",
 	"repository": {
-        "type": "git",
-        "url": "https://github.com/ReanGD/vscode-devdocs-io"
+		"type": "git",
+		"url": "https://github.com/ReanGD/vscode-devdocs-io"
 	},
 	"bugs": {
-        "url": "https://github.com/ReanGD/vscode-devdocs-io/issues"
-    },
+		"url": "https://github.com/ReanGD/vscode-devdocs-io/issues"
+	},
 	"engines": {
 		"vscode": "^1.47.0"
 	},
@@ -21,11 +21,11 @@
 		"Other"
 	],
 	"keywords": [
-        "devdocs",
-        "doc",
-        "help",
-        "documentation"
-    ],
+		"devdocs",
+		"doc",
+		"help",
+		"documentation"
+	],
 	"activationEvents": [
 		"onCommand:devdocs-io.search"
 	],
@@ -34,9 +34,22 @@
 		"commands": [
 			{
 				"command": "devdocs-io.search",
-				"title": "devdocs-io: Search"
+				"title": "Search",
+				"category": "devdocs-io"
 			}
-		]
+		],
+		"configuration": {
+			"type": "object",
+			"title": "DevDocs-io",
+			"properties": {
+				"devdocs-io.URL": {
+					"type": "string",
+					"default": "https://devdocs.io/",
+					"format": "uri",
+					"markdownDescription": "URL of the devdocs site, if you are using a local instance, then specify its URL, for example `http://localhost:9292`"
+				}
+			}
+		}
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",
