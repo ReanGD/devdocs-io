@@ -67,6 +67,14 @@
 					],
 					"default": "Beside",
 					"markdownDescription": "The column in which the documentation opens"
+				},
+				"devdocs-io.proxy_port": {
+					"type": "integer",
+					"title": "Proxy port",
+					"minimum": 1024,
+					"maximum": 65535,
+					"default": 12785,
+					"markdownDescription": "The port on which the http proxy for devdocs.io is launched to change the cookie"
 				}
 			}
 		}

@@ -6,12 +6,21 @@ export function activate(): void {
 export function deactivate(): void {
 }
 
-export function getURL(): string {
-    return vscode.workspace.getConfiguration("devdocs-io").get("URL", "https://devdocs.io/").toString();
+export function getDevDocsURL(): string {
+    return vscode.workspace.getConfiguration("devdocs-io").get<string>("url", "https://devdocs.io/");
+}
+
+export function getProxyPort(): number {
+    return vscode.workspace.getConfiguration("devdocs-io").get<number>("proxy_port", 12785);
+}
+
+export function getProxyBaseURL(): string {
+    let port = getProxyPort();
+    return `http://localhost:${port}`;
 }
 
 export function getСolumn(): vscode.ViewColumn {
-    let column = vscode.workspace.getConfiguration("devdocs-io").get("column", "Beside").toString();
+    let column = vscode.workspace.getConfiguration("devdocs-io").get<string>("column", "Beside");
     switch(column) {
         case "Active":
             return vscode.ViewColumn.Active;

@@ -95,7 +95,7 @@ class Proxy {
 
 	start() {
 		this.stop();
-		this.proxyServer = httpProxy.createProxyServer({ target: settings.getURL() }).listen(8000);
+		this.proxyServer = httpProxy.createProxyServer({ target: settings.getDevDocsURL() }).listen(settings.getProxyPort());
 	}
 
 	stop() {
@@ -114,11 +114,11 @@ export function activate(context: vscode.ExtensionContext) {
 	proxy.start();
 
 	let searchCmd = vscode.commands.registerCommand('devdocs-io.search', () => {
-		panels.last("http://localhost:8000");
+		panels.last(settings.getProxyBaseURL());
 	});
 
 	let searchNewTabCmd = vscode.commands.registerCommand('devdocs-io.searchNewTab', () => {
-		panels.add("http://localhost:8000");
+		panels.add(settings.getProxyBaseURL());
 	});
 
 	context.subscriptions.push(searchCmd, searchNewTabCmd);
