@@ -68,6 +68,12 @@
 					"default": "Beside",
 					"markdownDescription": "The column in which the documentation opens"
 				},
+				"devdocs-io.mobile_mode": {
+					"type": "boolean",
+					"title": "Mobile mode",
+					"default": true,
+					"markdownDescription": "Open devdocs.io in mobile mode or not (mobile mode is more suitable for vscode)"
+				},
 				"devdocs-io.proxy_port": {
 					"type": "integer",
 					"title": "Proxy port",

@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 
+
 export function activate(): void {
 }
 
@@ -17,6 +18,10 @@ export function getProxyPort(): number {
 export function getProxyBaseURL(): string {
     let port = getProxyPort();
     return `http://localhost:${port}`;
+}
+
+export function isMobileMode(): boolean {
+    return vscode.workspace.getConfiguration("devdocs-io").get<boolean>("mobile_mode", true);
 }
 
 export function getСolumn(): vscode.ViewColumn {

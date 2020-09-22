@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
-import * as httpProxy from 'http-proxy';
+import * as proxy from './proxy';
 import * as settings from './settings';
 
 
 class Panel {
-	id: number;
-	removed: boolean;
-	parent: PanelStorage;
-	panel: vscode.WebviewPanel;
+	private id: number;
+	private removed: boolean;
+	private parent: PanelStorage;
+	private panel: vscode.WebviewPanel;
 
     constructor(parent: PanelStorage) {
 		this.id = 1;
@@ -29,6 +29,10 @@ class Panel {
 				this.parent.onDestroyPanel();
 			}, null
 		);
+	}
+
+	isRemoved(): boolean {
+		return this.removed;
 	}
 
 	goto(url: string) {
@@ -56,7 +60,7 @@ class Panel {
 }
 
 class PanelStorage {
-	panels: Panel[];
+	private panels: Panel[];
 
 	constructor() {
 		this.panels = [];
@@ -64,7 +68,7 @@ class PanelStorage {
 
 	onDestroyPanel() {
 		this.panels.forEach(function(item, index, object) {
-			if (item.removed) {
+			if (item.isRemoved()) {
 			  object.splice(index, 1);
 			}
 		});
@@ -86,32 +90,10 @@ class PanelStorage {
 	}
 }
 
-class Proxy {
-	proxyServer: httpProxy | undefined;
-
-	constructor() {
-		this.proxyServer = undefined;
-	}
-
-	start() {
-		this.stop();
-		this.proxyServer = httpProxy.createProxyServer({ target: settings.getDevDocsURL() }).listen(settings.getProxyPort());
-	}
-
-	stop() {
-		if (this.proxyServer !== undefined) {
-			this.proxyServer.close();
-			this.proxyServer = undefined;
-		}
-	}
-}
-
 export function activate(context: vscode.ExtensionContext) {
 	settings.activate();
-	let proxy = new Proxy();
+	proxy.activate();
 	let panels = new PanelStorage();
-
-	proxy.start();
 
 	let searchCmd = vscode.commands.registerCommand('devdocs-io.search', () => {
 		panels.last(settings.getProxyBaseURL());
@@ -125,9 +107,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 export function deactivate() {
+	proxy.deactivate();
 	settings.deactivate();
 }
 
-function showMessage(test: string) {
-	vscode.window.showInformationMessage(test);
+function showMessage(text: string) {
+	vscode.window.showInformationMessage(text);
 }

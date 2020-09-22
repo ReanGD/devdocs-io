@@ -3,7 +3,7 @@
 ## 0.2.0
 
 - Added http proxy for change cookie
-- Added settings: "proxy_port"
+- Added settings: "proxy_port" and "mobile_mode"
 
 ## 0.1.0
 
