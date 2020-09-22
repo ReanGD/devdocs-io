@@ -2,7 +2,7 @@
 	"name": "devdocs-io",
 	"displayName": "devdocs-io",
 	"description": "Search docs on devdocs.io",
-	"version": "0.1.0",
+	"version": "0.2.0",
 	"publisher": "ReanGD",
 	"icon": "images/icon.png",
 	"license": "Apache 2.0",
@@ -77,6 +77,10 @@
 		"compile": "tsc -p ./",
 		"lint": "eslint src --ext ts",
 		"watch": "tsc -watch -p ./"
+	},
+	"dependencies": {
+		"http-proxy": "^1.18.1",
+		"@types/http-proxy": "^1.17.4"
 	},
 	"devDependencies": {
 		"@types/node": "^13.11.0",

@@ -1,5 +1,9 @@
 # Change Log
 
+## 0.2.0
+
+- Added http proxy for change cookie
+
 ## 0.1.0
 
 - Added panel with devdocs.io

@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import * as httpProxy from 'http-proxy';
 
 
 class Settings {
@@ -56,6 +57,9 @@ class Panel {
 	}
 
 	goto(url: string) {
+		if (this.removed) {
+			return;
+		}
 		this.id++;
 		const html = `
 		<!DOCTYPE html>
@@ -71,10 +75,9 @@ class Panel {
 		</body>
 		</html>`;
 
-		if (!this.removed) {
-			this.panel.webview.html = html;
-			this.panel.reveal(this.settings.getСolumn());
-		}
+		this.panel.webview.html = html;
+		this.panel.reveal(this.settings.getСolumn());
+		showMessage(url);
 	}
 }
 
@@ -111,16 +114,41 @@ class PanelStorage {
 	}
 }
 
+class Proxy {
+	settings: Settings;
+	proxyServer: httpProxy | undefined;
+
+	constructor(settings: Settings) {
+		this.settings = settings;
+		this.proxyServer = undefined;
+	}
+
+	start() {
+		this.stop();
+		this.proxyServer = httpProxy.createProxyServer({ target: this.settings.getURL() }).listen(8000);
+	}
+
+	stop() {
+		if (this.proxyServer !== undefined) {
+			this.proxyServer.close();
+			this.proxyServer = undefined;
+		}
+	}
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	let settings = new Settings();
+	let proxy = new Proxy(settings);
 	let panels = new PanelStorage(settings);
 
+	proxy.start();
+
 	let searchCmd = vscode.commands.registerCommand('devdocs-io.search', () => {
-		panels.last(settings.getURL());
+		panels.last("http://localhost:8000");
 	});
 
 	let searchNewTabCmd = vscode.commands.registerCommand('devdocs-io.searchNewTab', () => {
-		panels.add(settings.getURL());
+		panels.add("http://localhost:8000");
 	});
 
 	context.subscriptions.push(searchCmd, searchNewTabCmd);
