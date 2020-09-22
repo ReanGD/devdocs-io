@@ -1,47 +1,22 @@
 import * as vscode from 'vscode';
 import * as httpProxy from 'http-proxy';
+import * as settings from './settings';
 
-
-class Settings {
-	getURL() {
-		return vscode.workspace.getConfiguration("devdocs-io").get("URL", "https://devdocs.io/").toString();
-	}
-
-	getСolumn() {
-		let column = vscode.workspace.getConfiguration("devdocs-io").get("column", "Beside").toString();
-		switch(column) {
-			case "Active":
-				return vscode.ViewColumn.Active;
-			case "Beside":
-				return vscode.ViewColumn.Beside;
-			case "First":
-				return vscode.ViewColumn.One;
-			case "Second":
-				return vscode.ViewColumn.Two;
-			case "Third":
-				return vscode.ViewColumn.Three;
-			default:
-				return vscode.ViewColumn.Beside;
-		}
-	}
-}
 
 class Panel {
 	id: number;
 	removed: boolean;
-	settings: Settings;
 	parent: PanelStorage;
 	panel: vscode.WebviewPanel;
 
-    constructor(settings: Settings, parent: PanelStorage) {
+    constructor(parent: PanelStorage) {
 		this.id = 1;
 		this.removed = false;
-		this.settings = settings;
 		this.parent = parent;
 		this.panel = vscode.window.createWebviewPanel(
 			'devdocs.io',
 			'devdocs.io',
-			this.settings.getСolumn(),
+			settings.getСolumn(),
 			{
 				enableScripts: true,
 				retainContextWhenHidden: true
@@ -76,18 +51,15 @@ class Panel {
 		</html>`;
 
 		this.panel.webview.html = html;
-		this.panel.reveal(this.settings.getСolumn());
-		showMessage(url);
+		this.panel.reveal(settings.getСolumn());
 	}
 }
 
 class PanelStorage {
 	panels: Panel[];
-	settings: Settings;
 
-	constructor(settings: Settings) {
+	constructor() {
 		this.panels = [];
-		this.settings = settings;
 	}
 
 	onDestroyPanel() {
@@ -99,7 +71,7 @@ class PanelStorage {
 	}
 
 	add(url: string) {
-		let panel = new Panel(this.settings, this);
+		let panel = new Panel(this);
 		panel.goto(url);
 		this.panels.push(panel);
 	}
@@ -115,17 +87,15 @@ class PanelStorage {
 }
 
 class Proxy {
-	settings: Settings;
 	proxyServer: httpProxy | undefined;
 
-	constructor(settings: Settings) {
-		this.settings = settings;
+	constructor() {
 		this.proxyServer = undefined;
 	}
 
 	start() {
 		this.stop();
-		this.proxyServer = httpProxy.createProxyServer({ target: this.settings.getURL() }).listen(8000);
+		this.proxyServer = httpProxy.createProxyServer({ target: settings.getURL() }).listen(8000);
 	}
 
 	stop() {
@@ -137,9 +107,9 @@ class Proxy {
 }
 
 export function activate(context: vscode.ExtensionContext) {
-	let settings = new Settings();
-	let proxy = new Proxy(settings);
-	let panels = new PanelStorage(settings);
+	settings.activate();
+	let proxy = new Proxy();
+	let panels = new PanelStorage();
 
 	proxy.start();
 
@@ -154,7 +124,9 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(searchCmd, searchNewTabCmd);
 }
 
-export function deactivate() {}
+export function deactivate() {
+	settings.deactivate();
+}
 
 function showMessage(test: string) {
 	vscode.window.showInformationMessage(test);
