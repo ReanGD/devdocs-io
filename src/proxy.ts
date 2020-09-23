@@ -1,9 +1,55 @@
 import * as settings from './settings';
 import * as httpProxy from 'http-proxy';
-import { ServerResponse, IncomingMessage } from 'http';
+import { ServerResponse, IncomingMessage, IncomingHttpHeaders } from 'http';
 
 
 let proxyServer: httpProxy | undefined = undefined;
+
+
+class CookieValue {
+    value: string;
+    origin: string;
+
+    constructor(value: string, origin: string) {
+        this.value = value;
+        this.origin = origin;
+    }
+}
+
+class Cookie {
+    storage: { [index:string] : CookieValue } = {};
+
+    constructor(headers: IncomingHttpHeaders) {
+        let cookieHeader = headers.cookie;
+        if (cookieHeader === undefined) {
+            return;
+        }
+
+        let parts: string[] = cookieHeader.split(";").filter((str: string) => { return typeof str === "string" && !!str.trim(); });
+        parts.forEach((part) => {
+            let sides = part.split("=");
+            if (sides.length === 2) {
+                this.storage[sides[0].trim()] = new CookieValue(sides[1].trim(), part.trim());
+            } else {
+                this.storage[part] = new CookieValue(part, part);
+            }
+        });
+    }
+
+    getValue(name: string): string | undefined {
+        if (name in this.storage) {
+            return this.storage[name].value;
+        }
+
+        return undefined;
+    }
+
+    toString(): string {
+        return Object.values(this.storage)
+            .map((property) => `${property.origin}`)
+            .join("; ");
+    }
+}
 
 function start(target: string, proxyPort: number): void {
     if (proxyServer !== undefined) {
@@ -12,10 +58,22 @@ function start(target: string, proxyPort: number): void {
     }
 
     proxyServer = httpProxy.createProxyServer({ target: target }).listen(proxyPort);
+    proxyServer.on("proxyRes", function (proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) {
+        let contentType = proxyRes.headers["content-type"];
+        if (contentType === undefined) {
+            return;
+        }
 
-    proxyServer.on('proxyRes', function (proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) {
-        let mobileCookie = (settings.isMobileMode()) ? 'override-mobile-detect=1' : 'override-mobile-detect=0';
-        res.setHeader('Set-Cookie', [mobileCookie]);
+        if (!contentType.startsWith("text/html")) {
+            return;
+        }
+
+        let cookie = new Cookie(req.headers);
+        let mobileModeExpectedValue = settings.isMobileMode() ? "1" : "0";
+        let mobileModeActualValue = cookie.getValue("override-mobile-detect");
+        if (mobileModeActualValue !== mobileModeExpectedValue) {
+            res.setHeader('Set-Cookie', `override-mobile-detect=${mobileModeExpectedValue}`);
+        }
     });
 }
 
