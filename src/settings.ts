@@ -1,3 +1,4 @@
+import { URL } from 'url';
 import * as vscode from 'vscode';
 
 
@@ -7,8 +8,8 @@ export function activate(): void {
 export function deactivate(): void {
 }
 
-export function getDevDocsURL(): string {
-    return vscode.workspace.getConfiguration("devdocs-io").get<string>("url", "https://devdocs.io/");
+export function getDevDocsURL(): URL {
+    return new URL(vscode.workspace.getConfiguration("devdocs-io").get<string>("url", "https://devdocs.io/"));
 }
 
 export function getProxyPort(): number {

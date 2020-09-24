@@ -1,3 +1,4 @@
+import { URL } from 'url';
 import * as settings from './settings';
 import * as httpProxy from 'http-proxy';
 import { ServerResponse, IncomingMessage, IncomingHttpHeaders } from 'http';
@@ -51,13 +52,20 @@ class Cookie {
     }
 }
 
-function start(target: string, proxyPort: number): void {
+function start(address: URL, proxyPort: number): void {
     if (proxyServer !== undefined) {
         proxyServer.close();
         proxyServer = undefined;
     }
 
-    proxyServer = httpProxy.createProxyServer({ target: target }).listen(proxyPort);
+    let isSecure = (address.protocol === "https:");
+    let options: httpProxy.ServerOptions = {
+        secure: isSecure ? false : undefined,
+        target: address.toString(),
+        changeOrigin: isSecure ? true : undefined,
+    };
+
+    proxyServer = httpProxy.createProxyServer(options).listen(proxyPort);
     proxyServer.on("proxyRes", function (proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) {
         let contentType = proxyRes.headers["content-type"];
         if (contentType === undefined) {
