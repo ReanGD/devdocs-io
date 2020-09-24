@@ -52,6 +52,34 @@ class Cookie {
     }
 }
 
+function copyHeaders(proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) {
+    if (req.httpVersion === '1.0') {
+        delete proxyRes.headers['transfer-encoding'];
+    }
+
+    if (req.httpVersion === '1.0') {
+        proxyRes.headers.connection = req.headers.connection || 'close';
+    } else if (req.httpVersion !== '2.0' && !proxyRes.headers.connection) {
+        proxyRes.headers.connection = req.headers.connection || 'keep-alive';
+    }
+
+    Object.keys(proxyRes.headers).forEach(function(key) {
+        var header = proxyRes.headers[key];
+        if (header !== undefined) {
+            res.setHeader(key.trim(), header);
+        }
+    });
+
+
+    if (proxyRes.statusCode) {
+        res.statusCode = proxyRes.statusCode;
+    }
+
+    if(proxyRes.statusMessage) {
+        res.statusMessage = proxyRes.statusMessage;
+    }
+}
+
 function start(address: URL, proxyPort: number): void {
     if (proxyServer !== undefined) {
         proxyServer.close();
@@ -63,24 +91,27 @@ function start(address: URL, proxyPort: number): void {
         secure: isSecure ? false : undefined,
         target: address.toString(),
         changeOrigin: isSecure ? true : undefined,
+        selfHandleResponse: true,
     };
 
     proxyServer = httpProxy.createProxyServer(options).listen(proxyPort);
     proxyServer.on("proxyRes", function (proxyRes: IncomingMessage, req: IncomingMessage, res: ServerResponse) {
         let contentType = proxyRes.headers["content-type"];
         if (contentType === undefined) {
+            copyHeaders(proxyRes, req, res);
+            proxyRes.pipe(res);
             return;
         }
 
-        if (!contentType.startsWith("text/html")) {
-            return;
-        }
-
-        let cookie = new Cookie(req.headers);
-        let mobileModeExpectedValue = settings.isMobileMode() ? "1" : "0";
-        let mobileModeActualValue = cookie.getValue("override-mobile-detect");
-        if (mobileModeActualValue !== mobileModeExpectedValue) {
-            res.setHeader('Set-Cookie', `override-mobile-detect=${mobileModeExpectedValue}`);
+        if (contentType.startsWith("text/html")) {
+            copyHeaders(proxyRes, req, res);
+            let cookie = new Cookie(req.headers);
+            let mobileModeExpectedValue = settings.isMobileMode() ? "1" : "0";
+            let mobileModeActualValue = cookie.getValue("override-mobile-detect");
+            if (mobileModeActualValue !== mobileModeExpectedValue) {
+                res.setHeader('Set-Cookie', `override-mobile-detect=${mobileModeExpectedValue}`);
+            }
+            proxyRes.pipe(res);
         }
     });
 }
