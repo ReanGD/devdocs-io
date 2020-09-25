@@ -94,7 +94,9 @@
 	},
 	"dependencies": {
 		"http-proxy": "^1.18.1",
-		"@types/http-proxy": "^1.17.4"
+		"@types/http-proxy": "^1.17.4",
+		"replacestream": "^4.0.3",
+		"@types/replacestream": "^4.0.0"
 	},
 	"devDependencies": {
 		"@types/node": "^13.11.0",
