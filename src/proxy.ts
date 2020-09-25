@@ -55,19 +55,6 @@ class Cookie {
     }
 }
 
-function decompessWrap(proxyRes: IncomingMessage): stream.Readable {
-    switch (proxyRes.headers['content-encoding']) {
-        case 'br':
-            return proxyRes.pipe(zlib.createBrotliDecompress());
-        case 'gzip':
-            return proxyRes.pipe(zlib.createGunzip());
-        case 'deflate':
-            return proxyRes.pipe(zlib.createInflate());
-        default:
-            return proxyRes;
-      }
-}
-
 class Response {
     private proxyRes: IncomingMessage;
     private req: IncomingMessage;
@@ -104,35 +91,38 @@ class Response {
         }
     }
 
-    private decompessStream(input: stream.Readable, contentEncoding: string | undefined): stream.Readable {
+    private decompessStream(contentEncoding: string | undefined): stream.Readable {
+        this.res.setHeader('content-encoding', 'identity');
         switch (contentEncoding) {
             case 'br':
-                return input.pipe(zlib.createBrotliDecompress());
+                return this.proxyRes.pipe(zlib.createBrotliDecompress());
             case 'gzip':
-                return input.pipe(zlib.createGunzip());
+                return this.proxyRes.pipe(zlib.createGunzip());
             case 'deflate':
-                return input.pipe(zlib.createInflate());
+                return this.proxyRes.pipe(zlib.createInflate());
             default:
-                return input;
+                return this.proxyRes;
           }
     }
 
-    private processCommon(input: stream.Readable): stream.Readable {
-        return input;
+    private processCommon(inStream: stream.Readable): stream.Readable {
+        return inStream;
     }
 
-    private processJs(input: stream.Readable): stream.Readable {
-        return input;
+    private processJs(inStream: stream.Readable): stream.Readable {
+        return inStream.pipe(replaceStream('"production",', '"development",')).pipe(replaceStream('//docs.devdocs.io', '/docs'));
     }
 
-    private processHtml(input: stream.Readable): stream.Readable {
+    private processHtml(inStream: stream.Readable): stream.Readable {
         let cookie = new Cookie(this.req.headers);
         let mobileModeExpectedValue = settings.isMobileMode() ? "1" : "0";
         let mobileModeActualValue = cookie.getValue("override-mobile-detect");
         if (mobileModeActualValue !== mobileModeExpectedValue) {
             this.res.setHeader('Set-Cookie', `override-mobile-detect=${mobileModeExpectedValue}`);
         }
-        return input;
+
+        let port = settings.getProxyPort();
+        return inStream.pipe(replaceStream("https://devdocs.io", `http://localhost:${port}`)).pipe(replaceStream("cdn.devdocs.io", `localhost:${port}`));
     }
 
     process(): void {
@@ -143,10 +133,9 @@ class Response {
         if (contentType === undefined) {
             outStream = this.processCommon(this.proxyRes);
         } else if (contentType.startsWith("application/javascript")) {
-            this.res.setHeader('content-encoding', 'identity');
-            outStream = this.processJs(this.decompessStream(this.proxyRes, contentEncoding));
+            outStream = this.processJs(this.decompessStream(contentEncoding));
         } else if (contentType.startsWith("text/html")) {
-            outStream = this.processHtml(this.proxyRes);
+            outStream = this.processHtml(this.decompessStream(contentEncoding));
         } else {
             outStream = this.processCommon(this.proxyRes);
         }
